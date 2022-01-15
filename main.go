@@ -115,21 +115,28 @@ var onCompress = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 				Log("e", err)
 			}
 			Log("Image size:", image1.Bounds().Dx(), image1.Bounds().Dy())
-			if image1.Bounds().Dx() > 1000 {
-				Log("Compress this image.....")
-				smaller := resize.Thumbnail(1240, 1754, image1, resize.Lanczos2)
-				var b bytes.Buffer
-				w := bufio.NewWriter(&b)
-				err := jpeg.Encode(w, smaller, nil)
-				images = append(images, CompressedImage{ObjNr: objNr})
-				if err != nil {
-					Log("Error enconding", err)
-				}
-				ctx.DeleteObject(objNr)
-				buf := new(bytes.Buffer)
-				err = jpeg.Encode(buf, smaller, nil)
-				images[len(images)-1].Ref, _, _, _ = createImageResource(ctx.XRefTable, buf)
+			Log("Compress this image.....")
+
+			smaller := image1;
+			
+			if (image1.Bounds().Dx() > 1240 || image1.Bounds().Dy() > 1754) {
+				smaller = resize.Thumbnail(1240, 1754, smaller, resize.Lanczos3)
+			} else {
+				smaller = resize.Thumbnail(uint(float64(smaller.Bounds().Dx()) * 0.8),uint(float64(smaller.Bounds().Dy()) * 0.8),  smaller, resize.Lanczos3)
 			}
+
+			var b bytes.Buffer
+			w := bufio.NewWriter(&b)
+			err = jpeg.Encode(w, smaller, nil)
+			images = append(images, CompressedImage{ObjNr: objNr})
+			if err != nil {
+				Log("Error enconding", err)
+			}
+			ctx.DeleteObject(objNr)
+			buf := new(bytes.Buffer)
+			err = jpeg.Encode(buf, smaller, nil)
+			images[len(images)-1].Ref, _, _, _ = createImageResource(ctx.XRefTable, buf)
+			
 		}
 	}
 	ctx.EnsureVersionForWriting()
