@@ -60,7 +60,15 @@ var onCompress = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			}
 			if img.Bounds().Dx() > 1000 {
 				Log(fmt.Sprint("Compress this image", objs[idx], "....."))
-				smaller := resize.Thumbnail(1240, 1740, img, resize.Lanczos2)
+				//smaller := resize.Thumbnail(1240, 1740, img, resize.NearestNeighbor)
+				smaller := img
+
+				if img.Bounds().Dx() > 1240 || img.Bounds().Dy() > 1754 {
+					smaller = resize.Thumbnail(1240, 1754, smaller, resize.Lanczos3)
+				} else {
+					smaller = resize.Thumbnail(uint(float64(smaller.Bounds().Dx())*0.8), uint(float64(smaller.Bounds().Dy())*0.8), smaller, resize.Lanczos3)
+				}
+
 				Log(smaller.Bounds().Dx(), img.Bounds().Dx())
 				//obj, _ := ctx.Find(objs[idx])
 				//obj, _ := ctx.Optimize.ImageObjects[objs[idx]]
